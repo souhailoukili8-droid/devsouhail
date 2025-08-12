@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <title>لوحة إدارة اللاعبين</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <style>
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .btn {
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .stats-card {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .stats-card-2 {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .stats-card-3 {
+            background: linear-gradient(45deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-light"
+
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-0"><i class="bi bi-speedometer2"></i> لوحة إدارة اللاعبين</h1>
+                <p class="mb-0 mt-2">إدارة شاملة للاعبين مع تتبع الأيام المتبقية</p>
+                <small class="opacity-75">مرحباً {{ session.username }} - {{ session.role }}</small>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('search_friend') }}" class="btn btn-light">
+                        <i class="bi bi-search"></i> بحث
+                    </a>
+                    <a href="{{ url_for('added_players') }}" class="btn btn-light">
+                        <i class="bi bi-people-fill"></i> المضافين
+                    </a>
+                    <a href="{{ url_for('removed_players') }}" class="btn btn-outline-light">
+                        <i class="bi bi-archive"></i> المحذوفين
+                    </a>
+                    <a href="{{ url_for('user_settings') }}" class="btn btn-light">
+                        <i class="bi bi-gear"></i> الإعدادات
+                    </a>
+                    {% if session.role == 'developer' %}
+                    <a href="{{ url_for('developer_panel') }}" class="btn btn-warning">
+                        <i class="bi bi-gear-fill"></i> المطور
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-light">
+                        <i class="bi bi-box-arrow-right"></i> خروج
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+ 
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-plus-fill fs-1 mb-2"></i>
+                    <h4>اللاعبين النشطين</h4>
+                    <h2>{{ currently_added_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card stats-card-2">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-dash-fill fs-1 mb-2"></i>
+                    <h4>إجمالي المحذوفين</h4>
+                    <h2>{{ log | selectattr("action", "equalto", "حذف") | list | length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card stats-card-3">
+                <div class="card-body text-center">
+                    <i class="bi bi-list-check fs-1 mb-2"></i>
+                    <h4>إجمالي العمليات</h4>
+                    <h2>{{ log | length }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+ 
+    <div class="card shadow-lg p-4 mb-4">
+
+        {% if message %}
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="bi bi-info-circle-fill"></i> {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endif %}
+
+     
+        <form method="POST" class="mb-4">
+            <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-key-fill text-warning fs-4 me-2"></i>
+                <h5 class="mb-0">إعدادات التوكنات</h5>
+            </div>
+            <div class="row g-3 align-items-center mb-3">
+                <div class="col-auto">
+                    <label class="col-form-label">Token1:</label>
+                </div>
+                <div class="col-auto flex-grow-1">
+                    <input type="text" name="token1" value="{{ config.token1 }}" class="form-control" required />
+                </div>
+            </div>
+            <div class="row g-3 align-items-center mb-3">
+                <div class="col-auto">
+                    <label class="col-form-label">Token2:</label>
+                </div>
+                <div class="col-auto flex-grow-1">
+                    <input type="text" name="token2" value="{{ config.token2 }}" class="form-control" required />
+                </div>
+            </div>
+            <button type="submit" name="save_tokens" class="btn btn-warning w-100">
+                <i class="bi bi-save"></i> حفظ التوكنات
+            </button>
+        </form>
+
+        <hr class="my-4">
+
+      
+        <div class="mb-4">
+            <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-search text-info fs-4 me-2"></i>
+                <h5 class="mb-0">البحث السريع عن صديق</h5>
+            </div>
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <input type="text" id="quick_search_uid" class="form-control" placeholder="أدخل UID للبحث السريع..." />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <button type="button" onclick="quickSearch()" class="btn btn-info w-100">
+                        <i class="bi bi-search"></i> بحث سريع
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+       
+        <form method="POST">
+            <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-person-gear text-primary fs-4 me-2"></i>
+                <h5 class="mb-0">إدارة اللاعبين</h5>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label"><i class="bi bi-person-badge"></i> UID اللاعب</label>
+                    <input type="text" name="uid" class="form-control" required placeholder="أدخل UID" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label"><i class="bi bi-calendar-date"></i> عدد الأيام (للإضافة فقط)</label>
+                    <input type="number" name="days" class="form-control" value="30" min="1" />
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <button type="submit" name="action" value="add" class="btn btn-success btn-lg me-md-2">
+                    <i class="bi bi-person-plus"></i> إضافة لاعب
+                </button>
+                <button type="submit" name="action" value="remove" class="btn btn-danger btn-lg">
+                    <i class="bi bi-person-dash"></i> حذف لاعب
+                </button>
+            </div>
+        </form>
+    </div>
+
+  
+    <div class="card shadow-lg p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-journal-text text-secondary fs-4 me-2"></i>
+                <h4 class="mb-0 text-secondary">سجل العمليات</h4>
+            </div>
+            <a href="{{ url_for('clear_log') }}" class="btn btn-outline-danger btn-sm" onclick="return confirm('هل تريد مسح السجل بالكامل؟')">
+                <i class="bi bi-trash"></i> مسح السجل
+            </a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th><i class="bi bi-person-badge"></i> UID</th>
+                        <th><i class="bi bi-person-fill"></i> اسم اللاعب</th>
+                        <th><i class="bi bi-gear"></i> العملية</th>
+                        <th><i class="bi bi-calendar-date"></i> الأيام</th>
+                        <th><i class="bi bi-hourglass-split"></i> الأيام المتبقية</th>
+                        <th><i class="bi bi-heart-fill"></i> الإعجابات</th>
+                        <th><i class="bi bi-trophy-fill"></i> المستوى</th>
+                        <th><i class="bi bi-geo-alt-fill"></i> المنطقة</th>
+                        <th><i class="bi bi-clock"></i> التاريخ</th>
+                        <th><i class="bi bi-check-circle"></i> النتيجة</th>
+                        <th><i class="bi bi-gear"></i> إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in log %}
+                        <tr>
+                            <td><span class="badge bg-secondary">{{ entry.uid }}</span></td>
+                            <td>
+                                <strong>{{ entry.get('username', 'غير متوفر') }}</strong>
+                            </td>
+                            <td>
+                                {% if entry.action == "إضافة" %}
+                                    <span class="badge bg-success"><i class="bi bi-plus-circle"></i> {{ entry.action }}</span>
+                                {% elif entry.action == "تمديد" %}
+                                    <span class="badge bg-info"><i class="bi bi-clock-history"></i> {{ entry.action }}</span>
+                                {% elif entry.action == "تقليل" %}
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-dash-circle"></i> {{ entry.action }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle"></i> {{ entry.action }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ entry.days }}</td>
+                            <td>
+                                {% if entry.get('remaining_days', '-') == "-" %}
+                                    <span class="text-muted">-</span>
+                                {% elif entry.get('remaining_days', 0) == 0 %}
+                                    <span class="badge bg-danger">منتهي</span>
+                                {% elif entry.get('remaining_days', 0) <= 7 %}
+                                    <span class="badge bg-warning text-dark">{{ entry.get('remaining_days', 0) }} يوم</span>
+                                {% else %}
+                                    <span class="badge bg-success">{{ entry.get('remaining_days', 0) }} يوم</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ "{:,}".format(entry.get('likes', 0)) }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-warning text-dark">{{ entry.get('level', 0) }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ entry.get('region', 'غير متوفر') }}</span>
+                            </td>
+                            <td><small class="text-muted">{{ entry.date }}</small></td>
+                            <td><small>{{ entry.result }}</small></td>
+                            <td>
+                                {% set remaining = entry.get('remaining_days', 0) %}
+                                {% if entry.action in ["إضافة", "تمديد", "تقليل"] and remaining != "-" and remaining|int >= 0 %}
+                                    <a href="{{ url_for('edit_player', uid=entry.uid) }}" class="btn btn-warning btn-sm" title="تعديل معلومات اللاعب">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="11" class="text-muted py-4">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                لا توجد عمليات مسجلة
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function quickSearch() {
+    const uid = document.getElementById('quick_search_uid').value.trim();
+    if (uid) {
+       
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("search_friend") }}';
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'search_uid';
+        input.value = uid;
+
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    } else {
+        alert('الرجاء إدخال UID صالح');
+    }
+}
+
+
+document.getElementById('quick_search_uid').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        quickSearch();
+    }
+});
+</script>
+</body>
+</html>

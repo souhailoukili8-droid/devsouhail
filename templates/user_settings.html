@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <title>إعدادات المستخدم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <style>
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .btn {
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        .settings-card {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .tokens-card {
+            background: linear-gradient(45deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        .form-control {
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+
+<div class="dashboard-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-0"><i class="bi bi-gear-fill"></i> إعدادات المستخدم</h1>
+                <p class="mb-0 mt-2">إدارة التوكنات والإعدادات الشخصية</p>
+                <small class="opacity-75">مرحباً {{ session.username }} - {{ session.role }}</small>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('index') }}" class="btn btn-light">
+                        <i class="bi bi-house-fill"></i> الرئيسية
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-light">
+                        <i class="bi bi-box-arrow-right"></i> خروج
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+   
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-{{ 'exclamation-triangle-fill' if category == 'error' else 'check-circle-fill' if category == 'success' else 'info-circle-fill' }}"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card settings-card">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-circle fs-1 mb-3"></i>
+                    <h3>{{ session.username }}</h3>
+                    <p class="mb-0">
+                        {% if session.role == 'developer' %}
+                            <span class="badge bg-warning text-dark fs-6">
+                                <i class="bi bi-gear-fill"></i> مطور
+                            </span>
+                        {% else %}
+                            <span class="badge bg-light text-dark fs-6">
+                                <i class="bi bi-person-fill"></i> مستخدم عادي
+                            </span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card tokens-card">
+                <div class="card-body">
+                    <h4 class="mb-3"><i class="bi bi-key-fill"></i> إعدادات التوكنات</h4>
+                    <p class="text-white-50 mb-4">
+                        هذه التوكنات خاصة بك فقط ولا يمكن للمستخدمين الآخرين رؤيتها أو استخدامها.
+                    </p>
+                    
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label text-white">Token 1:</label>
+                                <input type="text" name="token1" class="form-control" 
+                                       value="{{ config.token1 }}" placeholder="أدخل Token 1" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label text-white">Token 2:</label>
+                                <input type="text" name="token2" class="form-control" 
+                                       value="{{ config.token2 }}" placeholder="أدخل Token 2" required>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-light btn-lg">
+                                <i class="bi bi-check-circle"></i> حفظ التوكنات
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5><i class="bi bi-info-circle-fill text-primary"></i> معلومات التوكنات</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><i class="bi bi-check-circle text-success"></i> التوكنات محفوظة بشكل منفصل لكل مستخدم</li>
+                        <li><i class="bi bi-check-circle text-success"></i> لا يمكن للمستخدمين الآخرين رؤية توكناتك</li>
+                        <li><i class="bi bi-check-circle text-success"></i> يمكنك تغيير التوكنات في أي وقت</li>
+                        <li><i class="bi bi-check-circle text-success"></i> التوكنات مطلوبة لجميع العمليات</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5><i class="bi bi-shield-check-fill text-success"></i> الأمان والخصوصية</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><i class="bi bi-lock-fill text-warning"></i> بياناتك محفوظة في مجلد منفصل</li>
+                        <li><i class="bi bi-lock-fill text-warning"></i> سجل العمليات خاص بك فقط</li>
+                        <li><i class="bi bi-lock-fill text-warning"></i> لا يمكن للمستخدمين الآخرين الوصول لبياناتك</li>
+                        <li><i class="bi bi-lock-fill text-warning"></i> كل مستخدم له قاعدة بيانات منفصلة</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5><i class="bi bi-lightning-fill text-warning"></i> إجراءات سريعة</h5>
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('index') }}" class="btn btn-primary w-100">
+                                <i class="bi bi-house-fill"></i><br>
+                                <small>الصفحة الرئيسية</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('added_players') }}" class="btn btn-success w-100">
+                                <i class="bi bi-people-fill"></i><br>
+                                <small>اللاعبين المضافين</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('search_friend') }}" class="btn btn-info w-100">
+                                <i class="bi bi-search"></i><br>
+                                <small>البحث عن صديق</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {% if session.role == 'developer' %}
+                                <a href="{{ url_for('developer_panel') }}" class="btn btn-warning w-100">
+                                    <i class="bi bi-gear-fill"></i><br>
+                                    <small>لوحة المطور</small>
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('removed_players') }}" class="btn btn-secondary w-100">
+                                    <i class="bi bi-archive"></i><br>
+                                    <small>اللاعبين المحذوفين</small>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
